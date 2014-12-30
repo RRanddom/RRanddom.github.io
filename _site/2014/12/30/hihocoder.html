@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Code Everyday</title>
+
+    <link rel="stylesheet" href="/blog/stylesheets/styles.css">
+    <link rel="stylesheet" href="/blog/stylesheets/pygment_trac.css">
+    <script src="/blog/javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+      <h1><a href="http://.github.io/StrayBirds/">Code Everyday</a></h1>
+        <p>每天写一点代码，C++ &amp; Swift &amp; Object-C</p>
+      </header>
+      <section>
+        <h1>
+<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a> Divided Product 
+        </h1>
+<h3>问题描述</h3>
+
+<p>Given two positive integers N and M, please divide N into several integers A1, A2, ..., Ak (k &gt;= 1), so that:</p>
+
+<ul>
+<li>0&lt;A1&lt;A2&lt;...&lt;Ak;</li>
+<li>A1+A2+...+Ak=N;</li>
+<li>A1,A2,...,Ak are different with each other;</li>
+<li>The Product of them P=A1<em>A2</em>...*Ak is a multiple of M;</li>
+</ul>
+
+<h3>我的答案</h3>
+<div class="highlight"><pre><code class="language-cpp" data-lang="cpp">    <span class="cp">#include &lt;iostream&gt;</span>
+
+    <span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+
+    <span class="kt">int</span> <span class="nf">gcd</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span><span class="kt">int</span> <span class="n">b</span><span class="p">)</span>
+    <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">t</span><span class="p">;</span>
+    <span class="k">while</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">b</span><span class="p">;</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">a</span><span class="o">%</span><span class="n">b</span><span class="p">;</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">t</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">a</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kt">int</span> <span class="nf">search</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="p">,</span><span class="kt">int</span> <span class="n">j</span><span class="p">,</span><span class="kt">int</span> <span class="n">res</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">res</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span> <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+            <span class="k">else</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+        <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">k</span><span class="o">=</span><span class="n">j</span><span class="p">;</span><span class="n">k</span><span class="o">&gt;=</span><span class="mi">1</span><span class="p">;</span><span class="n">k</span><span class="o">--</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">k</span><span class="o">*</span><span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">*</span><span class="n">i</span><span class="p">)</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="k">else</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="n">search</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">k</span><span class="p">,</span><span class="n">min</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">k</span><span class="p">,</span><span class="n">k</span><span class="p">),</span><span class="n">res</span><span class="o">/</span><span class="n">gcd</span><span class="p">(</span><span class="n">res</span><span class="p">,</span><span class="n">k</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="k">return</span> <span class="n">count</span><span class="p">;</span>
+        <span class="p">}</span>
+
+    <span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">){</span>
+
+        <span class="kt">int</span> <span class="n">N</span><span class="p">,</span><span class="n">M</span><span class="p">;</span>
+
+        <span class="n">cin</span><span class="o">&gt;&gt;</span><span class="n">N</span><span class="o">&gt;&gt;</span><span class="n">M</span><span class="p">;</span>
+
+        <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="n">search</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">,</span><span class="n">M</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+</code></pre></div>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/"></a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>

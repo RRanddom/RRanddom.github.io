@@ -1,0 +1,64 @@
+<h3 id="section">问题描述</h3>
+
+<p>Given two positive integers N and M, please divide N into several integers A1, A2, …, Ak (k &gt;= 1), so that:</p>
+
+<ul>
+  <li>0&lt;A1&lt;A2&lt;…&lt;Ak;</li>
+  <li>A1+A2+…+Ak=N;</li>
+  <li>A1,A2,…,Ak are different with each other;</li>
+  <li>The Product of them P=A1<em>A2</em>…*Ak is a multiple of M;</li>
+</ul>
+
+<h3 id="my-answer">My Answer</h3>
+
+<p><code></code></p>
+
+<p>#include <iostream></iostream></p>
+
+<p>using namespace std;</p>
+
+<p>int gcd(int a,int b)
+{
+	int t;
+	while(b)
+	{
+		t = b;
+		b = a%b;
+		a = t;
+	}
+	return a;
+}</p>
+
+<p>int search(int i,int j,int res)
+{
+	if(i==0)
+	{
+		if(res==1) return 1;
+		else return 0;
+	}</p>
+
+<pre><code>int count = 0;
+
+for(int k=j;k&gt;=1;k--)
+{
+	if(k*(k+1) &lt; 2*i)
+		break;
+	else
+		count += search(i-k,min(i-k,k),res/gcd(res,k));
+}
+
+return count; }
+</code></pre>
+
+<p>int main(void){</p>
+
+<pre><code>int N,M;
+
+cin&gt;&gt;N&gt;&gt;M;
+
+cout&lt;&lt;search(N,N,M)&lt;&lt;endl;
+
+return 0; }
+</code></pre>
+
+<p>&lt;/code&gt;</p>
