@@ -1,4 +1,3 @@
-baseurl: /blog
 markdown: redcarpet
 safe: false
 title: Code Everyday
