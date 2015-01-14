@@ -1,0 +1,108 @@
+---
+layout: default
+title:  Divided Product
+---
+
+##问题描述
+
+有n个城市，需要在他们之间建路，使得每一个城市都能与其他城市连接。求最短的路径。
+(2<= n <= 10000)
+
+##我的想法
+
+这就是一个求最小生成树算法，我们学过的有kruskal算法，prim算法。其中kruskal算法比较简单。下面是实现。
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+
+using namespace std;
+
+class point{
+public:
+  int x,y;
+  point(){}
+  point(int a,int b):x(a),y(b) { }
+};
+
+inline double distance(point m,point n)
+{
+   return sqrt((m.x-n.x)*(m.x-n.x)+(m.y-n.y)*(m.y-n.y));
+}
+
+class edge{
+public:
+  int n1,n2;
+  double distance;
+  edge() {}
+  edge(int a,int b,int dis): n1(a),n2(b),distance(dis) { }
+};
+
+bool cp(edge a,edge b)
+{
+  return a.distance<b.distance;
+}
+
+double calcLength(int n,const vector<edge> & edges)
+{
+  vector<bool> status(n,false);
+  int counter = 0;
+  double ans = 0;
+  for(int i=0;i<edges.size();i++)
+  {
+    if(counter == n-1) break;
+    edge e = edges[i];
+    
+    if(status[e.n1] && status[e.n2])
+      continue;
+    else
+    {
+      counter ++;
+      ans += e.distance;
+      status[e.n1] = true;
+      status[e.n2] = true;
+    }
+ }
+ return ans;
+}
+   
+
+int main(void)
+{
+  vector<point> vec;
+  vector<edge> edges;
+  int n;
+  while(cin>>n)
+  {
+    vec.clear();
+    int x,y;
+    
+    for(int i=0;i<n;i++)
+    {
+      cin>>x>>y;
+      vec.push_back(point(x,y));
+    }
+    
+    for(int i=0;i<n;i++)
+      for(int j=i+1;j<n;j++)
+      {
+        edges.push_back(edge(i,j,distance(vec[i],vec[j])));
+      }
+      
+    sort(edges.begin(),edges.end(),cp);
+    
+    cout<<calcLength(n,edges);
+  }
+  
+  return 0;   
+}
+
+```
+
+##一些问题
+
+然后我们会发现，这个算法的时间复杂度为O(2n^2 log n),主要是用于排序。空间复杂度为O(n^2),主要是为了记录所有边。假设n == 10000。需要的空间至少是800MB。哎，太不科学了，所以我们不应该这么做，prim算法好像也无法优化空间复杂度。现在的问题是：我们的算法不能记录所有点之间的距离，否则就会占用过多空间！等我想到来了再来更新，暂时没有思路。
+
+
