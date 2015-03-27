@@ -5,7 +5,7 @@ title: 一个tableView的问题
 
 ## 一个问题
 
-我有这样如下需求：有一个tableView(继承自github上的SKSTableView)，其中cell有两种，一种是可扩展的cell，点开可以显示更多子列表；
+我有这样的需求：有一个tableView(继承自github上的SKSTableView)，其中cell有两种，一种是可扩展的cell，点开可以显示更多子列表；
 另一种是可下载的cell，cell右侧显示了一个下载标志，点击可下载的cell，后台就会启动下载(基于AFHTTPRequestOperation)，并且cell
 上还"覆盖"了一个progressView，能显示下载进度(也是通过AFNetworking的 setDownloadProgressBlock 实现的)。下载完成后那个progressView
 会消失，并且tableViewCell也会"进化"成可扩展的cell。
@@ -48,3 +48,7 @@ cell变成invisible的时候，另外一个cell就莫名其妙也出现了下载
 ```
 
 (不过我还没想出来怎么改代码！)
+
+翻了一个多小时的stackoverflow，大概想明白了：iOS是 memory compact设备，所以tableView不应该持有_某一个_tableViewCell的信息，不应该通过上面讲的那种方法更新cell的外观，因为cell一旦消失在视野里，它在内存中的信息也就没有了，tableViewCell获得信息的渠道应该是dataSource。
+所以应该把progressView这玩意儿放在MYTableViewCell里面，MYTableViewCell对外留一个progressValue的接口，progressValue不为0的时候...
+欸，等等，下载怎么办！
