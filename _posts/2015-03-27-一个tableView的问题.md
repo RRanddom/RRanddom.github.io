@@ -12,7 +12,7 @@ title: 一个tableView的问题
 
 有个小问题，我的添加progressView的操作是这么写的
 
-```object-c
+```objc
 
 MYTableViewCell *cell = (MYTableViewCell*)[_tableView cellForRowAtIndexPath:aIndexPath];
 
@@ -41,7 +41,7 @@ MYProgressView *progressView = [[MYProgressView alloc] init];
 cell变成invisible的时候，另外一个cell就莫名其妙也出现了下载动画，[这个问题](http://stackoverflow.com/questions/26216597/ios-uitableview-cell-changes-selection-state-when-scrolling)
 应该能解释为什么会出现这种现象，我们所有的能改变cell外观的东西应该都写在dataSource里面，否则就会出现意想不到的情况。
 
-```object-c
+```objc
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
 }
