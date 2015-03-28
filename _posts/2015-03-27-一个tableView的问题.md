@@ -58,7 +58,7 @@ cell变成invisible的时候，另外一个cell就莫名其妙也出现了下载
 progressView 放在cell里面
 
 ```objc
-\\cell.h
+//cell.h
 @property (nonatomic,strong) DCProgressView *progressView;
 @property (nonatomic,assign,setter=setProgress:) double progress;
 ```
