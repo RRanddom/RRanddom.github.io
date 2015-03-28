@@ -92,19 +92,22 @@ progressView 放在cell里面
 
 - (void) downloadWithIndexPath:(NSIndexPath *)indexPath
 {
+    /*init the request and operation*/
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%d.zip",Downloadprefix,indexPath.row]]];
     AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *path = [[paths objectAtIndex:0] stringByAppendingPathComponent:[NSString stringWithFormat:@"%d",section_id]];
+    NSString *path = [[paths objectAtIndex:0] stringByAppendingPathComponent:[NSString stringWithFormat:@"%d",indexPath.row]];
     operation.outputStream = [NSOutputStream outputStreamToFileAtPath:path append:NO];
+    
+    /*get the cell*/
     MYTableViewCell * cell = (MYTableViewCell *)[self.tableView cellForRowAtIndexPath:indexPath];
     
     [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Successfully downloaded file to %@", path);//
-        \\cell.doFinishAnimation = YES;
+        \\cell  doFinishAnimation 
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error: %@", error);
-        cell.doFailureAnimation = YES;
+        \\cell  doFailureAnimation
     }];
     
     [operation setDownloadProgressBlock:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
