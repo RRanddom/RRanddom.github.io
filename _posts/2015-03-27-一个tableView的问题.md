@@ -52,3 +52,70 @@ cell变成invisible的时候，另外一个cell就莫名其妙也出现了下载
 翻了一个多小时的stackoverflow，大概想明白了：iOS是 memory compact设备，所以tableView不应该持有_某一个_tableViewCell的信息，不应该通过上面讲的那种方法更新cell的外观，因为cell一旦消失在视野里，它在内存中的信息也就没有了，tableViewCell获得信息的渠道应该是dataSource。
 所以应该把progressView这玩意儿放在MYTableViewCell里面，MYTableViewCell对外留一个progressValue的接口，progressValue不为0的时候...
 欸，等等，下载怎么办！
+
+## 解决方案(部分代码)
+
+progressView 放在cell里面
+
+```objc
+\\cell.h
+@property (nonatomic,strong) DCProgressView *progressView;
+@property (nonatomic,assign,setter=setProgress:) double progress;
+```
+
+```
+\\cell.m
+- (void) setProgress:(double)progress
+{
+    self.progressView.progress = progress;
+    if (progress > 0.0) {
+        if (!_progressView) {
+            self.progressView = [[DCProgressView alloc] initWithFrame:self.bounds];
+            _progressView.tintColor = [UIColor colorWithRed:0.634 green:1.000 blue:0.538 alpha:0.800];
+            _progressView.progress = 0.0;
+            _progressView.rounding = 0.0;
+            _progressView.alpha = 0.4;
+            _progressView.fillColor = [UIColor colorWithRed:0.723 green:1.000 blue:0.997 alpha:1.000];
+            [self.contentView addSubview:_progressView];
+        }
+    }
+    
+    if (fabs(progress-1.0)<0.0001) {
+        [_progressView removeFromSuperview];
+        _progressView = nil;
+    }
+}
+```
+
+```objc
+\\tableViewController.m
+
+- (void) downloadWithIndexPath:(NSIndexPath *)indexPath
+{
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%d.zip",Downloadprefix,indexPath.row]]];
+    AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *path = [[paths objectAtIndex:0] stringByAppendingPathComponent:[NSString stringWithFormat:@"%d",section_id]];
+    operation.outputStream = [NSOutputStream outputStreamToFileAtPath:path append:NO];
+    MYTableViewCell * cell = (MYTableViewCell *)[self.tableView cellForRowAtIndexPath:indexPath];
+    
+    [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSLog(@"Successfully downloaded file to %@", path);//
+        \\cell.doFinishAnimation = YES;
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Error: %@", error);
+        cell.doFailureAnimation = YES;
+    }];
+    
+    [operation setDownloadProgressBlock:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
+        double percent = (double)totalBytesRead/totalBytesExpectedToRead;
+        /*if cell is visible*/
+        if ([[self.tableView indexPathsForVisibleRows] containsObject:indexPath])         {
+            cell.progress = percent;
+        }
+        }];
+    [operation start];
+}
+```
+
+代码大概就是这样的，可能有些其他问题
