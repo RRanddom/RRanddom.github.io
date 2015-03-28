@@ -63,8 +63,8 @@ progressView 放在cell里面
 @property (nonatomic,assign,setter=setProgress:) double progress;
 ```
 
-```
-\\cell.m
+```objc
+//cell.m
 - (void) setProgress:(double)progress
 {
     self.progressView.progress = progress;
@@ -88,7 +88,7 @@ progressView 放在cell里面
 ```
 
 ```objc
-\\tableViewController.m
+//tableViewController.m
 
 - (void) downloadWithIndexPath:(NSIndexPath *)indexPath
 {
@@ -104,10 +104,10 @@ progressView 放在cell里面
     
     [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Successfully downloaded file to %@", path);//
-        \\cell  doFinishAnimation 
+        //cell  doFinishAnimation 
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error: %@", error);
-        \\cell  doFailureAnimation
+        //cell  doFailureAnimation
     }];
     
     [operation setDownloadProgressBlock:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
