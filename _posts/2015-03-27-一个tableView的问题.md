@@ -122,3 +122,45 @@ progressView 放在cell里面
 ```
 
 代码大概就是这样的，可能有些其他问题
+
+### 其他问题
+
+想了想应该给下载动作加个锁，否则点了某个cell开始下载后再点一下，又会启动下载了。在cell里面加一个downloading标志，下载前判断是否该资源正在被下载
+
+```objc
+//cell.h
+@property (nonatomic,assign) BOOL downloading;
+```
+
+```objc
+//cell.m
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+{
+        //....
+        downloading = NO;
+}
+
+- (void) setProgress:(double)progress
+{
+    self.progressView.progress = progress;
+    if (progress > 0.0) {
+        if (!_progressView) {
+            downloading = YES;
+            self.progressView = [[DCProgressView alloc] initWithFrame:self.bounds];
+            _progressView.tintColor = [UIColor colorWithRed:0.634 green:1.000 blue:0.538 alpha:0.800];
+            _progressView.progress = 0.0;
+            _progressView.rounding = 0.0;
+            _progressView.alpha = 0.4;
+            _progressView.fillColor = [UIColor colorWithRed:0.723 green:1.000 blue:0.997 alpha:1.000];
+            [self.contentView addSubview:_progressView];
+        }
+    }
+    
+    if (fabs(progress-1.0)<0.0001) {
+        [_progressView removeFromSuperview];
+        downloading = NO;
+        _progressView = nil;
+    }
+}
+
+```
