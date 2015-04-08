@@ -3,7 +3,7 @@ layout : default
 title : 一个swift写的游戏
 ---
 
-### Chat Noir
+## Chat Noir
 
 Chat Noir是法语中黑猫的意思，我第一次玩到这个游戏是某编译器[附带的程序](http://docs.racket-lang.org/games/chat-noir.html)，后来有人在微信上发布了同样玩法的“围住神经猫”。你也可以[在线玩](http://www.silvergames.com/circle-the-cat)。
 
@@ -12,7 +12,7 @@ Chat Noir是法语中黑猫的意思，我第一次玩到这个游戏是某编�
 
 玩几局就能发现规律，猫每一步走的都是到达边界点的最短路径。如果编程实现这个游戏的话，就是寻径，地图可以抽象成无向连通图，每条路径权值相等，如果有n个节点，大概就会有3*n条边。可以用Dijkstra算法，但不划算，用bfs比较好。
 
-### 具体实现
+## 具体实现
 
 最近学了点Swift，正好拿来练手。
 
@@ -141,7 +141,11 @@ view还得响应用户的Tap Gesture，略过
 
 ![screenshot](http://sae-gif.qiniudn.com/game_screen_shot.png)
 
-### Swift怎么样
+## 难题
+
+初始化状态应该如何设置，使得猫可以被围住？这个问题有点复杂，很多山寨这个游戏的人都没有考虑到，先把问题放这儿。
+
+## Swift怎么样
 
 初体验，感受如下
 
