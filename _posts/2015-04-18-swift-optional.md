@@ -67,7 +67,7 @@ println(possibleString)
 ```
 和强行展开一样,如果possibleString是空值,程序就崩了
 
-## Implicitly Unwrapped Optionals in Swift
+## Implicitly Unwrapped Optionals in Swift(Swift中的隐式可选类型)
 
 ## 什么时候使用隐式可选类型(Implicitly Unwrapped Optional)
 
@@ -75,7 +75,7 @@ println(possibleString)
 
 每一个常量在初始化结束时都得有一个值.有时,初始化过程中没法给常量成员赋值,不过依然能保证用到它的时候它能有一个值
 
-使用可选类型(Optional)会有一个问题,初始化时会给常量成员赋值<code>nil</code>,接着,常量成员是不可变的···当你知道你个可选类型一定非空的时候,每次unwrap那个成员就显得很啰嗦.使用隐式可选类型就好啦,用的时候不必每次都unwrap
+使用可选类型(Optional)会有一个问题,初始化时会给常量成员赋值<code>nil</code>,常量成员是不可变的···当你知道你个可选类型一定非空的时候,每次unwrap那个成员就显得很啰嗦.使用隐式可选类型就好啦,用的时候不必每次都unwrap
 
 有一个很好的例子,在view加载完成前,UIView的某个子类没办法初始化
 
@@ -129,7 +129,7 @@ else {
 
 ## 什么时候不用隐式可选类型
 
-1. 惰性计算的成员变量
+### 1. 惰性计算的成员变量
 
 有时,有些成员变量永远不应该是nil,不过在初始化时没办法正确赋值.一种方法是声明它为隐式可选,另一种方法是声明为惰性变量(lazy variable)
 
@@ -151,7 +151,7 @@ contents在它第一次没调用前一直都没初始化.
 > 但是buttonOriginalWidth值必须在viewDidLoad方法中被初始化
 > 在此之前,buttonOriginalWidth不会被调用
 
-2. 其他情况都不该用
+### 2. 其他情况都不该用
 
 应该尽可能少用隐式可选类型,因为一旦用错(accessed while nil),整个App就Crash了,使用可选类型会保险一点
 
