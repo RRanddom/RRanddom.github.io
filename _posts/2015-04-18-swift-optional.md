@@ -1,6 +1,6 @@
 ---
-layout : defalut
-title : Swift中optional介绍
+layout : default
+title : Swift中0ptional介绍
 ---
 
 ## Optional是什么
