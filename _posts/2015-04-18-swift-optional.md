@@ -18,19 +18,19 @@ title : Swift中0ptional介绍
 
 ## Optional是怎么定义的
 
-为了解决这个问题,Swift 创建了Optional这个_类型_,它即可以表示某个对象,也可以是nil
+为了解决这个问题,Swift 创建了Optional这个_类型_,它既可以表示某个对象,也可以是nil
 
 ```Swift
 enum Optional {
     case None
     case Some<T>
-
+}
 ```
 你通过加一个'?'来声明一个optional类型 (String?)
 
 ## 展开一个可选值 (Unwrapping an Optional)
 
-当你使用Optional前,你先得unwrap它,就是说你在用它前先要断言它必定不是空值,我们把optional对象看成是对象本身和null值的绑定
+当你使用Optional前,你先得unwrap它,就是说你在用它前先要判断它会不会不是空值,我们把optional对象看成是对象本身和null值的绑定(或者说是复合)
 
 ### Optional Binding
 
@@ -48,11 +48,11 @@ if let actualString = possibleString {
 
 ### Forced Unwrapping (强行展开)
 
-有事你很确信某Optional value是非空的,你可以用'!'来强行展开
+有时你很确信某Optional value是非空的,你可以用'!'来强行展开
 
 ```Swift
 let possibleString : String? = "Hell0"
-println(possibleString?)
+println(possibleString!)
 ```
 
 如果possibleString是空值，这个程序就崩了
@@ -67,4 +67,5 @@ println(possibleString)
 ```
 和强行展开一样,如果possibleString是空值,程序就崩了
 
+[翻译自](http://www.drewag.me/posts/what-is-an-optional-in-swift#optional-binding)
 
