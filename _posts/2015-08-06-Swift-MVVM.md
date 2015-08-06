@@ -1,6 +1,11 @@
+---
+layout : default
+title : Swift中0ptional介绍
+---
+
 ## MVC -> Swift MVVM
 
-这是一篇翻译的文章，最近在学Swift，嘿!
+这是一篇翻译的文章，最近在学Swift!
 
 这篇文章不是讲"MVVM大法好"或者"别用MVC，快切换到MVVM吧"，它主要讲在Swift语境下如何完善MVC模式
 
