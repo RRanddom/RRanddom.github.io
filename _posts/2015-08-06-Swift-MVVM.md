@@ -1,9 +1,7 @@
 ---
 layout : default
-title : Swift中0ptional介绍
+title : MVC -> Swift MVVM
 ---
-
-## MVC -> Swift MVVM
 
 这是一篇翻译的文章，最近在学Swift!
 
@@ -11,18 +9,23 @@ title : Swift中0ptional介绍
 
 为了区分，先解释下文中的view是什么意思。view是呈现数据的一整块或一小块屏幕。比如：由一个image view 和一个title label组成的collection view cell，或是由title label、日期label和文本label组成的一个view。反正我说的view不是狭义的UIView
 
-假如需要一个view来展示一篇文章。它应当显示文章的主体、标题和发表时间。在UIKit中，view和controller之间是强耦合的，所以才命名为view controller，因为我们完全不在乎view的布局，所以我们直接吧view定义为view controller。
+假如需要一个view来展示一篇文章。view应当呈现文章的主体文本、标题和发表时间等元素。在UIKit中，view和controller之间是强耦合的(所以才命名为view controller)，因
+为我们完全不在乎view的布局，所以我们直接把view定义为view controller。
 
 ```Swift
+
 class ArticleViewController: UIViewController {
   var bodyTextView: UITextView
   var titleLabel: UILabel
   var dateLabel: UILabel
 }
+
 ```
 
-然后，我们需要一些数据来填充view。我们先第一个Article Model
+然后，我们需要一些数据来填充view。我们先定义一个Article Model
+
 ```Swift
+
 class Article {
   var title: String
   var body: String
@@ -33,7 +36,7 @@ class Article {
 
 ```
 
-剩下的就是填充view了，我们需要的textview 标题和日期在model中都有了。在MVC架构中，那是controller的工作。
+剩下的就是填充view了，我们需要的textview、标题和日期在model中都有了。在MVC架构中，那是controller的工作。
 
 ```Swift
 
@@ -55,7 +58,7 @@ class ArticleViewController: UIViewController {
 }
 
 ```
-我们使用Swift的![property observer](https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/Properties.html#//apple_ref/doc/uid/TP40014097-CH14-XID_390)，使得每次property值改变的时候，didSet里面的代码都能执行(不过在构造方法中，那个方法不会被执行)。每当property改变，view就会有新的数据填充。我们还需要对model进行一些处理，Date标签需要String来初始化，不过model提供的是NSdate对象
+我们使用Swift的[property observer](https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/Properties.html#//apple_ref/doc/uid/TP40014097-CH14-XID_390)，使得每次property值改变的时候，didSet里面的代码都能执行(不过在构造方法中，那个方法不会被执行)。每当property改变，view就会有新的数据填充。我们还需要对model进行一些处理，Date标签需要String来初始化，不过model提供的是NSdate对象
 
 现在考虑这么个场景，你完全实现了ArticleViewController，现在你还需要支持其他类型的article model，比如说字典类型的article
 
@@ -63,7 +66,7 @@ class ArticleViewController: UIViewController {
 {
   "title": "<string>",
   "body": "<string>",
-  "date": "<json_date>"
+  "date": "<json_date>",
   "thumbnail": "<url>"
 }
 ```
@@ -112,9 +115,8 @@ class ArticleViewController: UIViewController {
 一个比较好的idea是将dictionary转化为Article对象。但如果Article是Core data中的managed object就没辙了?如果没有managed object context就没法实例化它。另外，定义个所有Article遵守的protocol
 也不是一个好主意。我们需要新的方法。
 
-在讨论解决方法之前，我们先考虑一个新的问题，我们的controller非常简单，但实际项目中会非常复杂。记得我们怎么操作NSDate，才能获得用户友好的string格式?对于你可能不是什么难事，不过如果我们还需要展示之前
-定义的photo。我们的model没有image，而是image的url，我们的controller还需要网络请求和图片处理逻辑。在想想controller还要作什么：它会监听屏幕旋转，调整view，处理button点击事件和滑动事件，还有个事
-手势，保存状态。。。如果能避免，就不应当让controller处理model。这是我们用MVVM模式处理的第二个问题。
+在讨论解决方法之前，我们先考虑一个新的问题，我们的controller非常简单，但实际项目中会非常复杂。记得我们要先操作NSDate，才能获得用户看得懂的string格式?对于你可能不是什么难事，不过如果我们还需要展示之前
+定义的photo。我们的model没有image，而是image的url，我们的controller还需要网络请求和图片处理逻辑。在想想controller还要作什么：它会监听屏幕旋转，调整view，处理button点击事件和滑动事件，还有个手势，保存状态。。。如果能避免，就不应当让controller处理model。这是我们用MVVM模式处理的第二个问题。
 
 在架构设计的过程中我们的目标永远是组件的简单化。一般通过限制组件的输入和职责来达到这个目标。我们就要对controller做这样的事情。我们把处理model的职责分离开来，指定controller的输入状态。
 最优雅的做法是定义一个指定view显示的protocol。那就是我们view model
@@ -153,8 +155,8 @@ class ArticleViewController: UIViewController {
 美吗?我们做的就是将viewModel的property匹配到UI元素上，我们将view controller和model独立开来了，把丑陋的data formmatter和model类型检查都抛弃掉了。很棒是不是，不过我们仍然需要搞到真实的数据源。
 你可能猜到了，在view model的具体实现里面有。
 
-具体实现view model有几种方法，如果你熟悉Swift的![extensions]()，你可以拓展Article来遵守ArticleViewViewModel协议。那是很棒的解决方案，不过当Article是字典时没用。我们创建一个新类，它实现了ArticleViewViewModel
-需要Article对象作为输入
+具体实现view model有几种方法，如果你熟悉Swift的[extensions]()，你可以拓展Article来遵守ArticleViewViewModel协议。那是很棒的解决方案，不过当Article是字典时没用。我们创建一个新类，它实现了ArticleViewViewModel
+，需要Article对象作为输入
 
 ```Swift
 
@@ -218,7 +220,7 @@ class ArticleViewController: UIViewController {
 
 ```
 
-很简单，我们吧image定义为Optional类型的，理由很简单(想想就知道了)
+很简单，我们把image定义为Optional类型的，理由很简单(想想就知道了)
 
 谁来提供thumbnail? 对，是view model。我们在view model里面加上下载thumbnail的方法。
 
