@@ -3,7 +3,7 @@ layout : default
 title : Effective-Objective-C-笔记
 ---
 
-### Item3
+### Item 3
 
 #### Literal Arrays
 
@@ -18,7 +18,7 @@ NSArray *arrayb = @[objc1,objc2,objc3];
 
 如果objc2为nil时，arrayb在创建过程中会抛出异常，而arraya不会，但是arraya中只会有一个元素。
 
-### Item4
+### Item 4
 
 #### 常量
 
@@ -46,7 +46,7 @@ NSString *const EOCStringConstant = @"SomeValue"
 
 用这种方式定义常量的好处之一是，编译器不会允许对该常量的修改或是重定义，如果使用#define的话，可能会被重新定义
 
-###Item5
+### Item 5
 
 #### Enum
 
@@ -89,5 +89,8 @@ typedef NS_ENUM(NSUInteger,EOCConnectionState) {
 }
 ```
 
-
 !!!值得注意的是，使用Switch语句处理一个enum的时候，不要写default，因为当你尝试在enum中加类型的时候，编译器不会给你警告，而是默默用default给你处理。
+
+// 2015-08-12 16:18:45
+
+### Item 6 : 理解Property
