@@ -251,3 +251,230 @@ BOOL equalC = [foo isEqualToString:bar];
 这一节没什么难的，pass
 
 // 2015-08-14 02:38:26
+
+### Item 10 : Associated Objects
+
+有下列方法:
+
+```Objective-C
+
+void objc_setAssociatedObject(id object,void *key,id value,objc_AssociationPolicy policy)
+
+id objc_getAssociatedObject(id object,void key)
+
+void objc_removeAssociatedObjects(id object)
+
+```
+
+第一个方法很像[object setObject:value forKey:key] (object 是NSDictionary类型)，第二个方法像[object objectForKey:key]
+
+举个使用association的例子:
+
+在iOS开发中，会经常使用UIAlertView(我推荐使用UIAlertController)。比如这样:
+
+```Objective-C
+- (void)askUserAQuestion {
+  UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Question"
+                                              message:@"What do you want to do?"
+                                              delegate:self
+                                              cancelButtonTitle:@"Cancel"
+                                              otherButtonTitles:@"Continue",nil];
+
+  [alert show];
+}  
+  ///delegate method
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSUInteger)buttonIndex
+{
+  if(buttonIndex == 0) {
+    [self doCancel];
+  } else {
+    [self doContinue];
+  }
+}
+
+```
+
+当你个页面有多个alertView的时候就有些麻烦了，delegate方法先要判断是那个alertView被触发了。如果在触发某个alertView的时候，alertView每个选项的逻辑能被确定(而不是在delegate方法中才被确定),那就好多了。
+
+```Objective-C
+#import <objc/runtime.h>
+
+static void *EOCMyAlertViewKey = "EOCMyAlertViewKey";
+
+- (void)askUserAQuestion {
+  UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"Question"
+                                              message:@"What do you want to do?"
+                                              delegate:self
+                                              cancelButtonTitle:@"Cancel"
+                                              otherButtonTitles@"Continue",nil];
+
+
+  void (^block)(NSInteger) = ^(NSInteger buttonIndex) { // block接受一个int，什么都不返回
+    if (buttonIndex == 0) {
+      [self doCancel];
+    } else {
+      [self doContinue];
+    }
+  };
+
+  objc_setAssociatedObject(alert,
+                      EOCMyAlertViewKey,
+                      block,
+                      OBJC_ASSOCIATION_COPY);
+
+ [alert show];
+ }
+
+ ///delegate method
+ - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+  void (^block)(NSInteger) = objc_getAssociatedObject(alertView,EOCMyAlertViewKey);
+  block(buttonIndex);
+}
+
+```
+
+### Item 11: objc_msgSend
+
+我们知道，在C语言里面，函数调用是通过一种叫做static binding的技术，我们调用的函数在编译期就已经确定了，函数的地址是hardcode到指令流里面的。
+
+```C
+
+#import <stdio.h>
+
+void printHello() {
+  printf("Hello,world\n");
+}
+
+void printGoodbye() {
+  printf("Goodbye,world");
+}
+
+void doXXX (int type) {
+  void (*fuc)();
+  if(type == 0) {
+    fnc = printHello;
+  }else {
+    fnc = printGoodbye;
+  }
+  fuc();
+  return 0;
+}
+```
+
+这儿用的是dynamic binding，懒得讲了，自己翻书切。
+
+dynamic binding 是oc里面函数调用使用的技术，OC里面方法调用--> id retVal = [someObject messageName:param];
+
+编译器把它翻译成C function --> id retVal = objc_msgSend(someObject,@selector(messageName:),param);
+
+### Item 12 : 理解Message Forwarding
+
+这一节主要讲当object不能识别发送给它的消息时会发生什么。嗯，会发生一种叫做Message forwarding的东西:
+
+看下面这段提示
+
+```
+[_NSCFNumber lowercaseString]:unrecognized selector sent to instance 0x87
+*** Terminating app due to uncaught exception
+'NSInvalidArgumentException',reason:'[_NSCFNumber lowercaseString]:unrecognized selector sent to instance 0x87'
+```
+
+它是NSObject类抛出的一个异常，叫做 doesNotRecognizeSelector:
+
+剩下的有些看不懂.
+
+### Item 13 : 用Method Swizzling来debug 看不要具体实现的方法
+
+调用的某个方法可以在运行时更改，可以改变我们看不到实现的方法。
+
+```Objective-C
+// 交换Method
+void method_exchangeImplementations(Method m1,Method m2)
+
+// 获取Method
+Method class_getInstanceMethod(Class aClass, SEL aSelector)
+```
+
+下列代码交换了lowercaseString 和uppercaseString的实现
+
+```Objective-C
+
+Method originalMethod = class_getInstanceMethod([NSString class],
+                                        @selector(lowercaseString));
+
+Method swappedMethod = class_getInstanceMethod([NSString class],
+                                          @selector(uppercaseString));
+
+method_exchangeImplementations(originalMethod,swappedMethod);
+```
+
+然后，下次调用lowercaseString，其实调用的是uppercaseString，调用uppercaseString，其实调用的是lowercaseString。
+
+假如你想在调用lowercaseString方法的时候，顺便打印出结果，怎么搞?
+
+```Objective-C
+
+@implementation NSString (EOCMyAddtions)
+- (NSString *)eoc_myLowercaseString {
+  NSString * lowercase = [self eoc_myLowercaseString];
+  NSLog(@"%@=>%@",self,lowercase);
+  return lowercase;
+}
+@end
+```
+
+看上去是递归，但其实不是的，运行时，eoc_myLowercaseString会被替换成lowercaseString。
+
+```Objective-C
+
+Method originalMethod = class_getInstanceMethod([NSString class],
+                                          @selector(lowercaseString));
+
+Method swappedMethod = class_getInstanceMethod([NSString class],
+                                          @selector(eoc_myLowercaseString));
+
+method_exchangeImplementations(originalMethod,swappedMethod);
+
+//然后
+
+NSString * string = @"ThIs iS tHe sTriNg";
+NSString * lowercase = [string lowercaseString]; // 能自动打印XXX
+
+```
+这是大杀器，慎用!!!
+
+### Item 14 : 理解什么是Class Object
+
+typedef struct objc_object {
+  Class isa;
+} * id;
+
+```Objective-C
+typedef struct objc_class * Class;
+struct objc_class {
+  Class isa; //
+  Class super_class;
+  const char *name;
+  long version;
+  long info;
+  long instance_size;
+  struct objc_ivar_list *ivars;
+  struct objc_method_list **methodLists;
+  struct objc_cache *cache;
+  struct objc_protocol_list *protocols;
+}
+
+```
+OC的introspection机制就是靠isa指针来获取对象的类，然后顺着继承关系(寻找父类)，如果没有introspection机制，你就没法完全了解一个类。
+
+```Objective-C
+
+//比较object是否是EOCSomeClass类型的:
+id object = /**/
+if([object class] == [EOCSomeClass class]) {
+  //
+}
+//这种方法不好，优先使用introspection机制
+```
+//2015-08-17 14:06:18
