@@ -478,3 +478,287 @@ if([object class] == [EOCSomeClass class]) {
 //这种方法不好，优先使用introspection机制
 ```
 //2015-08-17 14:06:18
+
+### Item 16: desinated initializer
+
+desinated initializer 是指一个特别的构造器，其他的构造方法都会调用它。举个例子:
+
+```Objective-C
+// NSDate
+-（id)init;
+- (id)initWithString:(NSString *)string
+- (id)initWithTimeIntervalSinceNow:(NSTimeInterval)seconds
+                                  sinceDate:(NSDate *)refDate
+- (id)initWithTimeIntervalSinceReferenceDate:
+                          (NSTimeInterval)seconds
+- (id)initWithTimeIntervalSince1970:(NSTimeInterval)seconds
+```
+
+其中initWithTimeIntervalSinceReferenceDate:就是desinated initializer。
+
+没什么好讲的，哼
+
+### Item 18 : 选择不可变的对象
+
+当你设计一个类的时候，你肯定会使用很多property来保存数据。建议只有当必须的时候才将对象变为可变的。(尽量将property标记为readonly)
+
+例子
+
+```Objective-C
+// 从webservice去到的POI数据，通常不需要任何修改
+@interface EOCPointOfInterest: NSObject
+
+@property (nonatomic,copy,readonly) NSString * identifier;
+@property (nonatomic,copy,readonly) NSString * title;
+@property (nonatomic,assign,readonly) float latitude;
+@property (nonatomic,assign,readonly) float longtitude;
+
+- (id) initWithIdentifier:(NSString *)identifier
+                    title:(NSString *)title
+                 latitude:(float)latitude
+               longtitude:(float)longtitude
+
+// 在category里面，把property定义为readwrite，这样类内可以修改property，类外不可以修改了
+
+@interface EOCPointOfInterest()
+@property (nonatomic,copy,readwrite) NSString *identifier;
+@property (nonatomic,copy,readwrite) NSString *title;
+@property (nonatomic,assign,readwrite) float latitude;
+@property (nonatomic,assign,readwrite) float longtitude;
+
+@end
+```
+
+再举个例子，假如有个类，它负责存person的名字和他的朋友，
+
+```Objective-C
+@interface EOCPerson : NSObject
+
+@property (nonatomic,copy,readonly) NSString * firstName;
+@property (nonatomic,copy,readonly) NSString * lastName;
+@property (nonatomic,strong,readonly) NSSet * friends
+
+- (id) initWithFirstName:(NSString *)firstName
+                andLastName:(NSString *)lastName;
+- (void)addFriend:(EOCPerson *)person;
+- (void)removeFriend:(EOCPerson *)person;
+@end
+
+// .m file
+
+@interface EOCPerson()
+@property (nonatomic,copy,readwrite) NSString *firstName;
+@property (nonatomic,copy,readwrite) NSString *lastName;
+@end
+
+@implementation EOCPerson {
+  NSMutableSet *_internalFriends;
+}
+
+- (NSSet *)friends {
+  return [_internalFriends copy];
+}
+
+- (void)addFriend:(EOCPerson *)person {
+  [_internalFriends addObject:person];
+}
+
+- (void)removeFriend:(EOCPerson *)person {
+  [_internalFriends removeObject:person];
+}
+
+- (id)initWithXXXX { // 懒得手打了
+  if((self = [super init])) {
+    _firstName = firstName;
+    _lastName = lastName;
+    _internalFriends = [NSMutableSet new];
+  }
+  return self;
+}
+@end
+```
+
+你可以将friends用mutableset来修饰，然后自己操作friends这个set来添加/删除元素，不过数据间耦合度太低了，容易产生bug。
+
+### Item 20 : 命名规则
+
+记住两点 :
+
+* private方法用小写+下划线作为前缀，比如 p_private_method
+* 不要单单使用一个下划线作前缀，可能会重写系统的方法
+
+### Item 21 : 理解Objective-C错误处理方式
+
+NSError的用法
+
+* 用法一:通过delegate方法来传递  //异步
+
+* 用法二:通过 - (void)doSomething:(NSError ** )error //同步
+
+```Objective-C
+- (BOOL)doSomething:(NSError *)error {
+  // do sth that cause an error
+  if (/*there is an error*/) {
+    if(error) {
+      *error = [NSError errorWithDomainXXX];
+    }
+    return NO;
+  }else {
+    retain YES;
+  }
+}
+
+总结:对于致命错误，抛出NSException,非致命错误通过NSError来处理
+
+```
+
+### Item 22 : 理解NSCopying协议
+
+关于copy & mutableCopy，看[这篇文章](https://www.zybuluo.com/MicroCai/note/50592),基本涵盖了这个Item的内容
+
+### Item 23 : Protocols
+
+protocols主要用来实现delegate模式，但也有其他用法
+
+### Item 24 : 使用category
+
+差不多都会
+
+### Item 25 : category 需要前缀
+
+比如
+
+```Objective-C
+// extension本身不需要加前缀，如果有两个extension同名，会有warning不会有error
+@interface NSString(HTTP)
+
+// 加abc前缀 防止override
+- (NSString *)abc_urlEncodedString;
+
+- (NSString *)abc_urlDecodeString;
+```
+
+### Item 26 : 别在category里面定义property
+
+错误示范
+
+```Objective-C
+@interface EOCPerson : NSObject
+
+@property (nonatomic,copy,readonly) NSString *firstName;
+@property (nonatomic,copy,readonly) NSString *lastName;
+
+- (id)initWithFirstName:(NSString *)firstName;
+               lastName:(NSString *)lastName;
+@end
+
+@implementation EOCPerson
+@end
+
+@interface EOCPerson(Friendship)
+@property (nonatomic,strong) NSArray *firends;
+- (BOOL)isFriendsWith:(EOCPerson *)person;
+@end
+
+
+@implementation EOCPerson(Friendship)
+@end
+```
+
+编译会得到类似的warning
+
+```
+warning:property 'friends' requires method 'friends' to be defined - use @dynamic or provide a method implementation in this category [...]
+```
+
+意思是说friends没法合成getter&setter。
+
+如果要强行加property，你得这么做!
+
+```Objective-C
+
+#import <objc/runtime.h>
+
+static const char *kFriendsPropertyKey = 'kFriendsPropertyKey';
+
+@implementation EOCPerson(Friendship)
+
+- (NSArray *)friends {
+  return objc_getAssociatedObject(self,kFriendsPropertyKey);
+}
+
+- (void)setFriends:(NSArray *)friends {
+  objc_setAssociatedObject(self,kFriendsPropertyKey,friends,OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+@end
+```
+
+易出错、不推荐。
+
+不过可以这样做
+
+```Objective-C
+
+@interface NSCalendar (EOC_Addtions)
+@property (nonatomic,strong,readonly) NSArray *eoc_allMonths;
+@end
+
+@implementation NSCalendar (EOC_Addtions)
+
+- (NSArray *)eoc_allMonths {
+  return @[@"January",XXX];
+}
+```
+
+因为该属性是只读的，不必为此生成setter方法，而且从getter方法看，不要要一个instance来存任何数据，其实这样也不好，直接写一个方法能达到同样的效果
+
+```Objective-C
+
+@interface NSCalendar(EOC_Addtions)
+- (NSArray *)eoc_allMonths;
+@end
+
+```
+
+> 关于内存管理的内容，类似文章实在是太多了，我准备另外写一篇文章记录一下
+
+### Item 37 : 理解Block
+
+下列内容主要是关于Block和多线程的，
+
+关于block的常用语法，可以看[这个网站](http://fuckingblocksyntax.com/)，非常管用，swift版的闭包可以看[这个网站](http://fuckingswiftblocksyntax.com/)，主要用来备忘。
+
+不多说了，重要的一点是，block会capture the variables in the scope which it is declared，不过它不能改变那些变量，否则会报错，可以用<code>\_\_block</code>定义那些可以被block改变的变量。
+
+```Objective-C
+
+NSArray * array = @[@0,@1,@2,@3,@4];
+__block NSInteger count = 0;
+[array enumerateObjectUsingBlock:
+        ^(NSNumber *number,NSUInteger idx,BOOL *stop) {
+          if ([number compare:@2] == NSOrderedAscending) {
+            count ++;
+          }
+          }];
+```
+
+//count == 2
+
+对了，有时候self会被implicitly captured by block，比如
+
+```Objective-C
+@interface EOCSomeClass
+
+- (void) anInstanceMethod {
+  void (^someBlock)() = ^{
+    _ansInstanceVariable = @"Sth";
+    NSLog(@"%@",_ansInstanceVariable)
+  };
+}
+```
+
+对_ansInstanceVariable赋值其实相当于 <code>self->\_ansInstanceVariable = @"sth"</code>
+
+可能引起retain cycles。
+
+>算了，我仔细想了想，block和多线程也自成一章吧
