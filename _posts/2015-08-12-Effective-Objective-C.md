@@ -608,9 +608,9 @@ NSError的用法
   }
 }
 
-总结:对于致命错误，抛出NSException,非致命错误通过NSError来处理
-
 ```
+
+总结:对于致命错误，抛出NSException,非致命错误通过NSError来处理
 
 ### Item 22 : 理解NSCopying协议
 
@@ -679,7 +679,7 @@ warning:property 'friends' requires method 'friends' to be defined - use @dynami
 
 #import <objc/runtime.h>
 
-static const char *kFriendsPropertyKey = 'kFriendsPropertyKey';
+static const char *kFriendsPropertyKey = "kFriendsPropertyKey";
 
 @implementation EOCPerson(Friendship)
 
